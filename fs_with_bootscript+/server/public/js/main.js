@@ -1,4 +1,4 @@
-const ws = new WebSocket('ws://192.168.132.3:3000');
+const ws = new WebSocket('ws://192.168.132.4:3000');
 
 ws.onopen = function () {
     console.log('CONNECT');
