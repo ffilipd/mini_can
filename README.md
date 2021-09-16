@@ -1,2 +1,2 @@
 # mini_can
-minimal file system for canvas-c-websocket-server
+minimal linux system for canvas-c-websocket-server
