@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
                     for (int i = 1; i < nfds; i++)
                     {
                         // Send "buffer" to "fd[i]"", "0" is a flag that tells the socket not to try to send while server is writing
-                        // printf("sending data: %s back to client: %d\n", buffer,fds[i].fd);
+                        printf("sending data: %s back to client: %d\n", buffer,fds[i].fd);
                         rc = send(fds[i].fd, buffer, len, 0);
                     }
                     if (rc < 0)

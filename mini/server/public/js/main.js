@@ -1,4 +1,4 @@
-const ws = new WebSocket('ws://canvas.dahlskog.fi');
+const ws = new WebSocket('ws://127.0.0.1:3000');
 
 ws.onopen = function () {
     console.log('CONNECT');
