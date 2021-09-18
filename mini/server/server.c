@@ -159,8 +159,7 @@ int main(int argc, char *argv[])
                     // RECEIVE DATA ON THIS SOCKET UNTIL EWOULDBLOCK OCCURS
                     // MSG_DONTWAIT is a flag set so that server continues when there is no more data to read
                     rc = recv(fds[i].fd, buffer, sizeof(buffer), MSG_DONTWAIT);
-                    sprintf(id, "%d", fds[i].fd);
-                    strcat(id, "/");
+
                     if (rc < 0)
                     {
                         if (errno != EWOULDBLOCK)
