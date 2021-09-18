@@ -19,6 +19,7 @@ window.addEventListener('load', function () {
     let start = 0; // Start point of arc
     let end = Math.PI * 2;  // End point of arc
     let dragging = false;
+    let clients = [];
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -48,7 +49,7 @@ window.addEventListener('load', function () {
         if (dragging) {
             let data = '';
             if (e.clientX) {
-                data = (e.clientX + -10) + ',' + (e.clientY -30);
+                data = (e.clientX + -10) + ',' + (e.clientY - 30);
             }
             else {
                 data = e.offsetX + ',' + e.offsetY;
@@ -95,16 +96,33 @@ window.addEventListener('load', function () {
 
 
     ws.onmessage = (msg) => {
-        if (msg.data == 'rtn') {
-            dragging = false;
-            context.beginPath();
+        let data = msg.data.split('/');
+        let id = data[0];
+        let message = data[1];
+
+        // find client id
+        if (!clients.includes(id)) {
+            clients.push(id);
         }
-        // console.log(msg.data);
-        const e = {
-            offsetX: parseInt(msg.data.split(',')[0]),
-            offsetY: parseInt(msg.data.split(',')[1])
-        };
-        draw(e);
+        if (message) {
+            if (message == 'rtn') {
+                dragging = false;
+                context.beginPath();
+            }
+            if (message.includes(',')) {
+                const e = {
+                    id: id,
+                    offsetX: parseInt(message.split(',')[0]),
+                    offsetY: parseInt(message.split(',')[1])
+                };
+                draw(e);
+            }
+            
+        }
+
+        console.log(message);
+
+
 
     };
 
