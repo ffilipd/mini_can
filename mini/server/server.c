@@ -17,7 +17,7 @@
 #include <fcntl.h>
 
 #define SERVER_PORT 4000 //specify the port that server is listening on
-#define BUFF 12
+#define BUFF 1024
 
 int main(int argc, char *argv[])
 {
