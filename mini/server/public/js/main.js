@@ -20,13 +20,26 @@ window.addEventListener('load', function () {
     let end = Math.PI * 2;  // End point of arc
     let dragging = false;
 
+    class Client {
+        constructor(id, lastX, lastY) {
+            this.id = id;
+            this.lastX = lastX;
+            this.lastY = lastY;
+        }
+    }
+
+    let clients = [];
+
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
     context.lineWidth = radius * 2; // Make line same width as points
 
 
-    const draw = (e) => {
+    const draw = (e, lastX, lastY) => {
+        if (lastX && lastY) {
+            context.moveTo(lastX, lastY);
+        }
         context.lineTo(e.offsetX, e.offsetY);
         context.stroke();
         context.beginPath();
@@ -95,17 +108,40 @@ window.addEventListener('load', function () {
 
 
     ws.onmessage = (msg) => {
+        let splitString = msg.data.split(':');
+        let id = splitString[0];
+        let message = splitString[1].split(',');
+        let x = parseInt(message[0]);
+        let y = parseInt(message[1]);
+
+        let index = clients.findIndex((c) => { return c.id == id});
+
+        if (index != -1) {
+            const e = {
+                offsetX: x,
+                offsetY: y
+            };
+            if (clients[index].lastX != '') {
+                draw(e, clients[index].lastX, clients[index].lastY);
+            }
+            else draw(e);
+            clients[index].lastX = x;
+            clients[index].lastY = y;
+        }
+        else clients.push(new Client(id));
+
         if (msg.data == 'rtn') {
             dragging = false;
             context.beginPath();
         }
-        // console.log(msg.data);
-        const e = {
-            offsetX: parseInt(msg.data.split(',')[0]),
-            offsetY: parseInt(msg.data.split(',')[1])
-        };
-        draw(e);
+        // console.log(clients);
+        // const e = {
+        //     offsetX: x,
+        //     offsetY: y
+        // };
+        // draw(e);
 
     };
-
 })
+
+

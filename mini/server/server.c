@@ -17,6 +17,7 @@
 #include <fcntl.h>
 
 #define SERVER_PORT 4000 //specify the port that server is listening on
+#define BUFF 12
 
 int main(int argc, char *argv[])
 {
@@ -24,11 +25,13 @@ int main(int argc, char *argv[])
     int listen_sd = -1, new_sd = -1;
     int desc_ready, end_server = 0, compress_array = 0;
     int close_conn;
-    char buffer[80];
+    char buffer[BUFF], ret[BUFF];
     struct sockaddr_in6 addr;
     int timeout;
     struct pollfd fds[200];
     int nfds = 1, current_size = 0, i, j;
+
+    
 
     // CREATE A STREAM TO RECEIVE INCOMMING CONNECTIONS
     listen_sd = socket(AF_INET6, SOCK_STREAM, 0);
@@ -156,6 +159,8 @@ int main(int argc, char *argv[])
 
                 do
                 {
+                    memset(ret, 0, BUFF); // Clear array
+                    memset(buffer, 0, BUFF); // Clear array
                     // RECEIVE DATA ON THIS SOCKET UNTIL EWOULDBLOCK OCCURS
                     // MSG_DONTWAIT is a flag set so that server continues when there is no more data to read
                     rc = recv(fds[i].fd, buffer, sizeof(buffer), MSG_DONTWAIT);
@@ -180,6 +185,8 @@ int main(int argc, char *argv[])
                     // DATA RECEIVED
                     len = rc;
 
+                    snprintf(ret, BUFF,"%d:%s", fds[i].fd, buffer); // concatenate buffer with id of client socket
+
                     // printf("  %d bytes received: %s,  from client: %d\n", len, buffer, fds[i].fd);
 
                     // SEND DATA BACK TO CLIENT
@@ -188,8 +195,9 @@ int main(int argc, char *argv[])
                     {
                         // Send "buffer" to "fd[i]"", "0" is a flag that tells the socket not to try to send while server is writing
                         // printf("sending data: %s back to client: %d\n", buffer,fds[i].fd);
-                        rc = send(fds[i].fd, buffer, len, 0);
+                        rc = send(fds[i].fd, ret, strlen(ret), 0);
                     }
+                    
                     if (rc < 0)
                     {
                         perror("  send() failed");
