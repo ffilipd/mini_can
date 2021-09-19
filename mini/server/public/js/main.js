@@ -1,4 +1,5 @@
-const ws = new WebSocket('ws://127.0.0.1:3000');
+// const ws = new WebSocket('ws://canvas.dahlskog.fi');
+const ws = new WebSocket('ws://192.168.132.3:3000');
 
 ws.onopen = function () {
     console.log('CONNECT');
@@ -19,6 +20,15 @@ window.addEventListener('load', function () {
     let start = 0; // Start point of arc
     let end = Math.PI * 2;  // End point of arc
     let dragging = false;
+
+    class Client {
+        constructor(id, lastX, lastY) {
+            this.id = id;
+            this.lastX = lastX;
+            this.lastY = lastY;
+        }
+    }
+
     let clients = [];
 
     canvas.width = window.innerWidth;
@@ -27,7 +37,10 @@ window.addEventListener('load', function () {
     context.lineWidth = radius * 2; // Make line same width as points
 
 
-    const draw = (e) => {
+    const draw = (e, lastX, lastY) => {
+        if (lastX && lastY) {
+            context.moveTo(lastX, lastY);
+        }
         context.lineTo(e.offsetX, e.offsetY);
         context.stroke();
         context.beginPath();
@@ -49,7 +62,7 @@ window.addEventListener('load', function () {
         if (dragging) {
             let data = '';
             if (e.clientX) {
-                data = (e.clientX + -10) + ',' + (e.clientY - 30);
+                data = (e.clientX + -10) + ',' + (e.clientY -30);
             }
             else {
                 data = e.offsetX + ',' + e.offsetY;
@@ -96,34 +109,40 @@ window.addEventListener('load', function () {
 
 
     ws.onmessage = (msg) => {
-        let data = msg.data.split('/');
-        let id = data[0];
-        let message = data[1];
+        let splitString = msg.data.split(':');
+        let id = splitString[0];
+        let message = splitString[1].split(',');
+        let x = parseInt(message[0]);
+        let y = parseInt(message[1]);
 
-        // find client id
-        if (!clients.includes(id)) {
-            clients.push(id);
-        }
-        if (message) {
-            if (message == 'rtn') {
-                dragging = false;
-                context.beginPath();
+        let index = clients.findIndex((c) => { return c.id == id});
+
+        if (index != -1) {
+            const e = {
+                offsetX: x,
+                offsetY: y
+            };
+            if (clients[index].lastX != '') {
+                draw(e, clients[index].lastX, clients[index].lastY);
             }
-            if (message.includes(',')) {
-                const e = {
-                    id: id,
-                    offsetX: parseInt(message.split(',')[0]),
-                    offsetY: parseInt(message.split(',')[1])
-                };
-                draw(e);
-            }
-            
+            else draw(e);
+            clients[index].lastX = x;
+            clients[index].lastY = y;
         }
+        else clients.push(new Client(id));
 
-        console.log(message);
-
-
+        if (msg.data == 'rtn') {
+            dragging = false;
+            context.beginPath();
+        }
+        // console.log(clients);
+        // const e = {
+        //     offsetX: x,
+        //     offsetY: y
+        // };
+        // draw(e);
 
     };
-
 })
+
+
