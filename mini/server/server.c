@@ -159,8 +159,8 @@ int main(int argc, char *argv[])
 
                 do
                 {
-                    memset(ret, 0, BUFF);
-                    memset(buffer, 0, BUFF);
+                    memset(ret, 0, BUFF); // Clear array
+                    memset(buffer, 0, BUFF); // Clear array
                     // RECEIVE DATA ON THIS SOCKET UNTIL EWOULDBLOCK OCCURS
                     // MSG_DONTWAIT is a flag set so that server continues when there is no more data to read
                     rc = recv(fds[i].fd, buffer, sizeof(buffer), MSG_DONTWAIT);
@@ -185,9 +185,7 @@ int main(int argc, char *argv[])
                     // DATA RECEIVED
                     len = rc;
 
-                    snprintf(ret, BUFF,"%d:%s", fds[i].fd, buffer);
-                    // printf("%s", ret);
-                    // snprintf(buffer, sizeof(buffer), "%d:%s", fds[i].fd, buffer);
+                    snprintf(ret, BUFF,"%d:%s", fds[i].fd, buffer); // concatenate buffer with id of client socket
 
                     // printf("  %d bytes received: %s,  from client: %d\n", len, buffer, fds[i].fd);
 
