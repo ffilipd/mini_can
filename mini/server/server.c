@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     int listen_sd = -1, new_sd = -1;
     int desc_ready, end_server = 0, compress_array = 0;
     int close_conn;
-    char buffer[80], id[10];
+    char buffer[80];
     struct sockaddr_in6 addr;
     int timeout;
     struct pollfd fds[200];
@@ -159,7 +159,6 @@ int main(int argc, char *argv[])
                     // RECEIVE DATA ON THIS SOCKET UNTIL EWOULDBLOCK OCCURS
                     // MSG_DONTWAIT is a flag set so that server continues when there is no more data to read
                     rc = recv(fds[i].fd, buffer, sizeof(buffer), MSG_DONTWAIT);
-
                     if (rc < 0)
                     {
                         if (errno != EWOULDBLOCK)
@@ -188,9 +187,8 @@ int main(int argc, char *argv[])
                     for (int i = 1; i < nfds; i++)
                     {
                         // Send "buffer" to "fd[i]"", "0" is a flag that tells the socket not to try to send while server is writing
-                        // printf("sending data: %s back to client: %d, length: %d\n", strcat(fds[i].fd, buffer),fds[i].fd, len);
-                        strcat(id, buffer);
-                        rc = send(fds[i].fd, id, strlen(id), 0);
+                        // printf("sending data: %s back to client: %d\n", buffer,fds[i].fd);
+                        rc = send(fds[i].fd, buffer, len, 0);
                     }
                     if (rc < 0)
                     {
