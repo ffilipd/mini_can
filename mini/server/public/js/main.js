@@ -20,16 +20,6 @@ window.addEventListener('load', function () {
     let end = Math.PI * 2;  // End point of arc
     let dragging = false;
 
-    class Client {
-        constructor(id, lastX, lastY) {
-            this.id = id;
-            this.lastX = lastX;
-            this.lastY = lastY;
-        }
-    }
-
-    let clients = [];
-
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
@@ -46,10 +36,23 @@ window.addEventListener('load', function () {
         context.moveTo(e.offsetX, e.offsetY);
     }
 
+    // Mouse button is clicked
+    // function putPoint(e) {
+    //     if (dragging) {
+    //         let data = e.offsetX + ',' + e.offsetY;
+    //         ws.send(data)
+    //     }
+    // }
+
     function putPoint(e) {
         if (dragging) {
             let data = '';
-            data = (e.clientX + -10) + ',' + (e.clientY - 30);
+            if (e.clientX) {
+                data = (e.clientX + -10) + ',' + (e.clientY -30);
+            }
+            else {
+                data = e.offsetX + ',' + e.offsetY;
+            }
             ws.send(data)
         }
     }
@@ -92,47 +95,17 @@ window.addEventListener('load', function () {
 
 
     ws.onmessage = (msg) => {
-        if (msg.data.includes(':')) {
-            let splitString = msg.data.split(':');
-            let id = splitString[0];
-            let message = '';
-
-            if (splitString[1].includes(',')) {
-                message = splitString[1].split(',');
-            }
-
-            let x = parseInt(message[0]);
-            let y = parseInt(message[1]);
-
-
-            let index = clients.findIndex((c) => { return c.id == id });
-
-            if (index != -1) {
-                const e = {
-                    offsetX: x,
-                    offsetY: y
-                };
-                if (clients[index].lastX != '') {
-                    context.moveTo(clients[index].lastX, clients[index].lastY);
-                    draw(e);
-                }
-                if (clients[index].lastX == '') {
-                    context.moveTo(x, y)
-                    draw(e);
-                }
-                clients[index].lastX = x;
-                clients[index].lastY = y;
-
-                if (splitString[1] == 'rtn') {
-                    clients[index].lastX = '';
-                    clients[index].lastY = '';
-                }
-            }
-            else clients.push(new Client(id));
+        if (msg.data == 'rtn') {
+            dragging = false;
+            context.beginPath();
         }
-
+        // console.log(msg.data);
+        const e = {
+            offsetX: parseInt(msg.data.split(',')[0]),
+            offsetY: parseInt(msg.data.split(',')[1])
+        };
+        draw(e);
 
     };
+
 })
-
-
