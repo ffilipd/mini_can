@@ -50,7 +50,12 @@ window.addEventListener('load', function () {
     function putPoint(e) {
         if (dragging) {
             let data = '';
-            data = (e.clientX + -10) + ',' + (e.clientY - 30);
+            if (e.clientX) {
+                data = (e.clientX + -10).toFixed() + ',' + (e.clientY -30).toFixed();
+            }
+            else {
+                data = e.offsetX.toFixed() + ',' + e.offsetY.toFixed();
+            }
             ws.send(data)
         }
     }
