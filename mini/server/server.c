@@ -17,7 +17,7 @@
 #include <fcntl.h>
 
 #define SERVER_PORT 4000 //specify the port that server is listening on
-#define BUFF 1024
+#define BUFF 2048
 
 int main(int argc, char *argv[])
 {
@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
                     len = rc;
 
                     snprintf(ret, BUFF,"%d:%s", fds[i].fd, buffer); // Concatenate buffer and client socket id
-                    // printf("%s", ret);
+                    printf("%s", ret);
 
                     // printf("  %d bytes received: %s,  from client: %d\n", len, buffer, fds[i].fd);
 

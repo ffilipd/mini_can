@@ -2,14 +2,14 @@
 const ws = new WebSocket('ws://192.168.132.3:3000');
 
 ws.onopen = function () {
-    console.log('CONNECT');
+    console.log('WS: CONNECTED');
 };
 ws.onclose = function () {
-    console.log('DISCONNECT');
+    console.log('WS: DISCONNECT');
 };
-ws.onmessage = function (event) {
-    // console.log('MESSAGE: ' + event.data);
-};
+// ws.onmessage = function (event) {
+//     // console.log('MESSAGE: ' + event.data);
+// };
 
 
 window.addEventListener('load', function () {
@@ -51,7 +51,7 @@ window.addEventListener('load', function () {
         if (dragging) {
             let data = '';
             if (e.clientX) {
-                data = (e.clientX + -10).toFixed() + ',' + (e.clientY -30).toFixed();
+                data = (e.clientX - 10).toFixed() + ',' + (e.clientY - 30).toFixed();
             }
             else {
                 data = e.offsetX.toFixed() + ',' + e.offsetY.toFixed();
@@ -100,7 +100,7 @@ window.addEventListener('load', function () {
     ws.onmessage = (msg) => {
         if (msg.data.includes(':')) {
             let splitString = msg.data.split(':');
-            let id = splitString[0];
+            let id = splitString[0].replace(/[^0-9]/g, '');
             let message = '';
 
             if (splitString[1].includes(',')) {
@@ -111,9 +111,11 @@ window.addEventListener('load', function () {
             let y = parseInt(message[1]);
 
 
+
             let index = clients.findIndex((c) => { return c.id == id });
 
             if (index != -1) {
+                console.log(clients[index])
                 const e = {
                     offsetX: x,
                     offsetY: y
@@ -121,18 +123,20 @@ window.addEventListener('load', function () {
                 if (clients[index].lastX != '') {
                     context.moveTo(clients[index].lastX, clients[index].lastY);
                     draw(e);
+                    clients[index].lastX = x;
+                    clients[index].lastY = y;
                 }
                 if (clients[index].lastX == '') {
                     context.moveTo(x, y)
                     draw(e);
+                    clients[index].lastX = x;
+                    clients[index].lastY = y;
                 }
-                clients[index].lastX = x;
-                clients[index].lastY = y;
-
-                if (splitString[1] == 'rtn') {
+                if (msg.data.includes('rtn')) {
                     clients[index].lastX = '';
                     clients[index].lastY = '';
                 }
+
             }
             else clients.push(new Client(id));
         }
