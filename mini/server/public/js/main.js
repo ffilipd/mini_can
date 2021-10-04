@@ -1,5 +1,5 @@
-// const ws = new WebSocket('ws://canvas.dahlskog.fi');
-const ws = new WebSocket('ws://192.168.132.3:3000');
+const ws = new WebSocket('ws://canvas.dahlskog.fi');
+// const ws = new WebSocket('ws://192.168.132.3:3000');
 
 ws.onopen = function () {
     console.log('WS: CONNECTED');
@@ -20,6 +20,7 @@ window.addEventListener('load', function () {
     let start = 0; // Start point of arc
     let end = Math.PI * 2;  // End point of arc
     let dragging = false;
+    let rtnSent = false;
 
     class Client {
         constructor(id, lastX, lastY) {
@@ -49,6 +50,7 @@ window.addEventListener('load', function () {
 
     function putPoint(e) {
         if (dragging) {
+            rtnSent = false;
             let data = '';
             if (e.clientX) {
                 data = (e.clientX - 10).toFixed() + ',' + (e.clientY - 30).toFixed();
@@ -57,6 +59,10 @@ window.addEventListener('load', function () {
                 data = e.offsetX.toFixed() + ',' + e.offsetY.toFixed();
             }
             ws.send(data)
+        }
+        else if (!rtnSent) {
+            rtnSent = true;
+            ws.send('rtn');
         }
     }
 
@@ -70,13 +76,11 @@ window.addEventListener('load', function () {
     function disengage() {
         dragging = false;
         context.beginPath();
-        ws.send("rtn");
     }
 
     canvas.addEventListener('mousedown', engage);
     canvas.addEventListener('mousemove', putPoint);
     canvas.addEventListener('mouseup', disengage);
-
 
     function touchstart(event) { engage(event.touches[0]) }
     function touchmove(event) { putPoint(event.touches[0]); event.preventDefault(); }
@@ -98,6 +102,7 @@ window.addEventListener('load', function () {
 
 
     ws.onmessage = (msg) => {
+        console.log(msg)
         if (msg.data.includes(':')) {
             let splitString = msg.data.split(':');
             let id = splitString[0].replace(/[^0-9]/g, '');
@@ -115,27 +120,31 @@ window.addEventListener('load', function () {
             let index = clients.findIndex((c) => { return c.id == id });
 
             if (index != -1) {
-                console.log(clients[index])
+                // console.log(clients[index])
                 const e = {
                     offsetX: x,
                     offsetY: y
                 };
-                if (clients[index].lastX != '') {
+
+                if (msg.data.includes('rtn')) {
+                    console.log('rtn');
+                    clients[index].lastX = null;
+                    clients[index].lastY = null;
+                }
+
+                else if (clients[index].lastX != null) {
                     context.moveTo(clients[index].lastX, clients[index].lastY);
                     draw(e);
                     clients[index].lastX = x;
                     clients[index].lastY = y;
                 }
-                if (clients[index].lastX == '') {
+                else if (clients[index].lastX == null) {
                     context.moveTo(x, y)
                     draw(e);
                     clients[index].lastX = x;
                     clients[index].lastY = y;
                 }
-                if (msg.data.includes('rtn')) {
-                    clients[index].lastX = '';
-                    clients[index].lastY = '';
-                }
+                
 
             }
             else clients.push(new Client(id));
